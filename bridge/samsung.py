@@ -109,6 +109,13 @@ class SamsungTV:
         self._tv_answers = {}
         # Open couch-tv when the TV comes on ("open_on_power_on": false to stop it).
         self.open_on_power_on = cfg.get("open_on_power_on", True) is not False
+        # "volume_poll": seconds between volume reads while the TV is on (0, the default, reads it only after
+        # a volume key sent from here, so a change made with the TV's own remote is not seen). Off by default
+        # because on some models the read puts the volume bar on screen.
+        try:
+            self.volume_poll = max(0, int(cfg.get("volume_poll") or 0))
+        except (TypeError, ValueError):
+            self.volume_poll = 0
         self.remote_name = cfg.get("remote_name") or config.CLIENT_NAME
         self.token_file = os.path.join(config.DATA, f"samsung-{self.id}-token.txt")
         # Paired means the TV has said Allow once (a token is kept). Keys need it; the rest does not.
@@ -348,6 +355,8 @@ class SamsungTV:
                         self.visible, self._vol_task = None, None
                     elif self._vol_task is None:
                         self._volume_soon()   # the one read that lets the phone show the level
+                    elif self.volume_poll and self._vol_task.done() and ticks % max(1, self.volume_poll // 2) == 0:
+                        await self._read_volume()   # asked for in config.json: follows the TV's own remote
                     # Nothing else is read on a timer. Which app is in front is read when something
                     # asks (front_package, the hook, open_title), the volume after a volume key.
                 else:
