@@ -221,7 +221,7 @@
     "com.google.android.apps.tv.launcherx", "com.google.android.tvlauncher", "app.couchtv.launcher",
     "com.limelight", "com.google.android.play.games", "com.google.android.videos"
   ];
-  var GRID_COLS = 12, GRID_MAX = 24;
+  var GRID_COLS = 12;
   var DOCK_APPS = 10;   // Night: apps in the dock before Settings and More apps (home.dock_size)
   var SETTINGS_PKG = "com.android.tv.settings";
   // The Play Store: always the first tile of More apps, never in the dock's order.
@@ -2120,8 +2120,10 @@
     data.screens.forEach(function (sc) { list.push({ kind: "screen", id: sc.id, name: sc.name, ready: sc.ready, note: sc.note }); });
     var tools = toolItems();
     if (expanded) return list.concat(extra, tools);
-    if (extra.length || list.length > GRID_MAX - tools.length) {
-      list = list.slice(0, GRID_MAX - 1 - tools.length).concat(tools, [moreItem()]);
+    // One row: the first apps, Settings, and at the right end the … tile that shows everything
+    // (the other tools, Smart home and Developer Mode, are in there too).
+    if (extra.length || list.length + tools.length > GRID_COLS) {
+      list = list.slice(0, GRID_COLS - 2).concat([gearItem(), moreItem()]);
     } else list = list.concat(tools);
     return list;
   }
