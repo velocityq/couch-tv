@@ -182,6 +182,15 @@
     return !grid || /[?&]old-engine\b/.test(Q);
   })();
   document.documentElement.classList.toggle("old-engine", OLD_ENGINE);
+  // The page is 120 rem wide whatever the screen (app.css: calc(100vw / 120)). Some TV browsers (an older LG
+  // webOS) ignore that rule and keep 16 px, so everything is drawn too big: the dock runs off the screen,
+  // wraps, and climbs over Keep watching. Set the same size from here too, and again when the window changes.
+  function fitRem() {
+    var w = window.innerWidth || document.documentElement.clientWidth || 1920;
+    document.documentElement.style.fontSize = (w / 120) + "px";
+  }
+  fitRem();
+  window.addEventListener("resize", fitRem);
 
   // What this TV keeps for itself (app order, people order, new apps, the look). Written to the
   // page's storage and to the launcher (TVOS.keep), so the live page and the saved copy share it.
